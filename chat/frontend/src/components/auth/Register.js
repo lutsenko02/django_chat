@@ -1,6 +1,7 @@
 import React, {useContext, useState} from 'react';
-import { Link, useHistory } from 'react-router-dom';
-import {UserContext} from "../utils/UserContext";
+import { Link, useNavigate } from 'react-router-dom';
+import { UserContext } from "../utils/UserContext";
+import { registerUser } from "../services/auth"
 
 function Register() {
 
@@ -10,14 +11,20 @@ function Register() {
     const [passwordSecond, setPasswordSecond] = useState();
     const {isAuth, setIsAuth} = useContext(UserContext);
 
+    let navigate = useNavigate();
+
     const handleSubmit = (e) => {
         e.preventDefault()
-
         if (password !== passwordSecond) {
             window.alert("Пароли не совпадают")
         } else {
-            console.log("пароли совпали!")
-            console.log(userName)
+            const registered = registerUser(userName, userEmail, password);
+            if (registered === true) {
+                setIsAuth(true);
+                navigate("/");
+            } else {
+                navigate("/register");
+            }
         }
 
         console.log(userName)

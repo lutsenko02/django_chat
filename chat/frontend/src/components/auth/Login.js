@@ -1,6 +1,7 @@
 import React, {useContext, useState} from 'react';
-import { Link, useHistory } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { UserContext } from '../utils/UserContext';
+import {loginUser, setAxiosAuthToken, setToken, getCurrentUser, unsetCurrentUser} from "../services/auth"
 
 function Login() {
 
@@ -8,10 +9,23 @@ function Login() {
     const [password, setPassword] = useState();
     const {isAuth, setIsAuth} = useContext(UserContext);
 
+    let navigate = useNavigate();
+
     const handleSubmit = (e) => {
         e.preventDefault()
-        console.log(userName)
-        console.log(password)
+        loginUser(userName, password)
+            .then(response => {
+                const auth_token = response;
+                setAxiosAuthToken(auth_token);
+                setToken(auth_token);
+                getCurrentUser();
+                setIsAuth(true);
+                navigate("/");
+            })
+            .catch(error => {
+                unsetCurrentUser();
+                window.alert("Ошибка при входе " + error);
+            })
     }
 
     return (
