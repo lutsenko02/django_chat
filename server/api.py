@@ -29,6 +29,12 @@ class ServerAPI(APIView):
     permission_classes = [permissions.IsAuthenticated]
     parser_classes = [MultiPartParser]
 
+    def get_object(self, pk):
+        try:
+            return ServerCategory.objects.get(pk=pk)
+        except ServerCategory.DoesNotExist:
+            raise Http404
+
     def get(self, request, format=None):
         servers = Server.objects.filter(Q(members = request.user) | Q(user = request.user)).distinct()
         serializer = ServerSerializer(servers, many=True)
@@ -57,7 +63,7 @@ def ServerDetail(request, pk):
         })
 @api_view(['GET'])
 @permission_classes([permissions.IsAuthenticated,])
-def ServerCategoriesAPI(request, pk):
+def ServerCategoriesAPI(request):
     if request.method == 'GET':
         categories = ServerCategory.objects.all()
         serializer = ServerCategorySerializer(categories, many=True)
@@ -83,3 +89,18 @@ class ServerSearch(generics.ListAPIView):
     serializer_class = ServerSerializer
     filter_backends = (filters.SearchFilter,)
     search_fields = ('title', 'description')
+
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated,])
+@parser_classes([JSONParser])
+def CategoryChannelsCreate(request):
+    if request.method == 'POST':
+        server = Server.objects.get(id=request.data['server_id'])
+        serializer = ServerChannelCategories(data=request.data)
+        if request.user in server.moderators.all() or request.user == server.user:
+            if serializer.is_valid(raise_exception=True):
+                created = serializer.save()
+                server.categories.add(created.id)
+                server.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

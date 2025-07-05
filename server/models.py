@@ -7,24 +7,10 @@ from django.db import models
 
 
 def server_directory_path_banner(instance, filename):
-    # file will be uploaded to MEDIA_ROOT/user_<id>/<filename>
-    banner_pic_name = 'user_{0}/server_{1}/banner.jpg'.format(instance.user.id, instance.id)
-    full_path = os.path.join(settings.MEDIA_ROOT, banner_pic_name)
-
-    if os.path.exists(full_path):
-    	os.remove(full_path)
-
-    return banner_pic_name
+    return f"servers/server_{instance.id}/banner.jpg"
 
 def server_directory_path_picture(instance, filename):
-    # file will be uploaded to MEDIA_ROOT/user_<id>/<filename>
-    picture_pic_name = 'user_{0}/server_{1}/banner.jpg'.format(instance.user.id, instance.id)
-    full_path = os.path.join(settings.MEDIA_ROOT, picture_pic_name)
-
-    if os.path.exists(full_path):
-    	os.remove(full_path)
-
-    return picture_pic_name
+    return f"servers/server_{instance.id}/picture.jpg"
 
 class ServerCategory(models.Model):
     title = models.CharField(max_length=120)
